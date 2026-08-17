@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhaya Baiju — Full Stack Developer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP & ScrollTrigger Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
+                    },
+                    colors: {
+                        darkBg: '#08090e',
+                        cardDark: '#121522',
+                        accentBlue: '#9db2ff',
+                        accentButton: '#a4b3ff',
+                        navBg: 'rgba(255, 255, 255, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #08090e;
+            background-image:
+                radial-gradient(circle at 75% 20%, rgba(157, 178, 255, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 20% 60%, rgba(99, 102, 241, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.12) 0%, transparent 45%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* SVG Background Tech Grid Overlay */
+        .bg-grid-pattern {
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        }
+
+        /* High Visibility Custom Glow Cursor */
+        #cursor-glow {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 450px;
+            height: 450px;
+            margin-top: -225px;
+            margin-left: -225px;
+            background: radial-gradient(circle, rgba(157, 178, 255, 0.22) 0%, rgba(99, 102, 241, 0.08) 45%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            z-index: 9999;
+            transition: transform 0.12s ease-out;
+        }
+
+        /* High Visibility Ambient Floating Shapes */
+        .ambient-floating {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0.45;
+        }
+
+        /* Animated Glowing Pulse Borders */
+        .glow-border {
+            position: relative;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(157, 178, 255, 0.5), transparent 40%, rgba(168, 85, 247, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Floating Pill Navbar */
+        .pill-nav {
+            background: rgba(18, 21, 34, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(18, 21, 34, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(157, 178, 255, 0.5);
+            box-shadow: 0 15px 35px -10px rgba(157, 178, 255, 0.25);
+        }
+
+        /* Text Gradient Effect */
+        .text-blue-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #a4b3ff 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Initial States for GSAP Animations */
+        .gsap-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        /* Infinite Marquee Animation */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: flex;
+            width: 200%;
+            animation: marquee 20s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+
+<body
+    class="font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-accentBlue selection:text-black relative bg-grid-pattern">
+
+    <div id="cursor-glow"></div>
+
+    <!-- HIGH VISIBILITY FLOATING AMBIENT BACKGROUND SHAPES -->
+    <div id="ambient-container" class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="ambient-floating w-[450px] h-[450px] bg-indigo-600/40 top-5 left-[-120px]"></div>
+        <div class="ambient-floating w-[400px] h-[400px] bg-blue-500/35 top-[35%] right-[-100px]"></div>
+        <div class="ambient-floating w-[380px] h-[380px] bg-purple-600/35 bottom-10 left-[15%]"></div>
+        <div class="ambient-floating w-[300px] h-[300px] bg-cyan-500/30 top-[70%] right-[20%]"></div>
+        
+        <!-- Glowing Floating Geometric Accents -->
+        <div class="floating-shape absolute top-1/4 left-12 text-indigo-300/40 font-mono text-2xl font-bold select-none">&lt;code&gt;</div>
+        <div class="floating-shape absolute top-2/3 right-16 text-indigo-300/40 font-mono text-3xl font-bold select-none">&#123; dev &#125;</div>
+        <div class="floating-shape absolute bottom-1/4 left-1/3 w-16 h-16 border-2 border-indigo-400/30 rounded-full select-none shadow-[0_0_15px_rgba(157,178,255,0.3)]"></div>
+        <div class="floating-shape absolute top-1/2 right-1/4 w-10 h-10 border-2 border-purple-400/30 rotate-45 select-none shadow-[0_0_15px_rgba(168,85,247,0.3)]"></div>
+    </div>
+
+    <!-- PRELOADER -->
+    <div id="preloader"
+        class="fixed inset-0 z-[100] bg-darkBg flex flex-col items-center justify-center p-6 select-none">
+        <div class="w-full max-w-sm space-y-4">
+            <div class="flex items-end justify-between border-b border-white/20 pb-2">
+                <h2 class="text-xs font-bold tracking-[0.3em] uppercase text-white">
+                    <span class="text-accentBlue">&lt;</span> ABHAYA BAIJU <span class="text-accentBlue">/&gt;</span>
+                </h2>
+                <span id="loader-counter" class="text-xs font-mono font-bold text-accentBlue">0%</span>
+            </div>
+
+            <div class="w-full h-2 bg-slate-900 border border-white/20 rounded-full overflow-hidden p-[1px]">
+                <div id="loader-bar"
+                    class="h-full bg-gradient-to-r from-indigo-500 via-accentBlue to-purple-400 rounded-full w-0 shadow-[0_0_15px_rgba(157,178,255,0.8)]">
+                </div>
+            </div>
+
+            <p id="loader-sub" class="text-[11px] text-slate-300 font-mono tracking-wider">
+                &gt; Initializing visual ecosystem...
+            </p>
+        </div>
+    </div>
+
+    <!-- FLOATING TOP NAVBAR -->
+    <header class="fixed top-6 inset-x-0 z-50 px-4">
+        <div
+            class="max-w-5xl mx-auto pill-nav rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
+
+            <a href="#" class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-accentBlue animate-ping"></span>
+                ABHAYA<span class="text-accentBlue">.DEV</span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+                <a href="#about" class="hover:text-accentBlue transition-colors">About</a>
+                <a href="#projects" class="hover:text-accentBlue transition-colors">Projects</a>
+                <a href="#skills" class="hover:text-accentBlue transition-colors">Skills</a>
+                <a href="#contact" class="hover:text-accentBlue transition-colors">Contact</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="#contact"
+                    class="px-5 py-2 rounded-full bg-accentButton hover:bg-white text-black font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 transform hover:scale-105">
+                    <i class="fa-regular fa-paper-plane text-xs"></i> Let's Talk
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="min-h-screen flex items-center justify-center pt-32 pb-16 px-6 lg:px-12 max-w-7xl mx-auto w-full relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+
+            <div class="lg:col-span-7 space-y-8">
+
+                <div
+                    class="hero-elem gsap-reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-xs text-indigo-200 font-semibold shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Available for Full-Stack Roles & Freelance
+                </div>
+
+                <h1
+                    class="hero-elem gsap-reveal text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
+                    Building <br />
+                    <span class="text-blue-gradient">Scalable & Smart</span> <br />
+                    Web Solutions
+                </h1>
+
+                <p
+                    class="hero-elem gsap-reveal text-slate-300 text-base sm:text-lg max-w-xl font-normal leading-relaxed">
+                    Python Full Stack Developer skilled in Python, Django, MySQL, HTML, CSS, Bootstrap, and Tailwind CSS. Crafting robust backend architectures paired with sleek frontends.
+                </p>
+
+                <!-- HERO STAT BADGES -->
+                <div class="hero-elem gsap-reveal grid grid-cols-3 gap-4 max-w-lg pt-2">
+                    <div class="glass-card rounded-2xl p-4 text-center">
+                        <h4 class="text-2xl font-extrabold text-accentBlue">2+</h4>
+                        <p class="text-[11px] text-slate-300 font-medium">Core Frameworks</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-4 text-center">
+                        <h4 class="text-2xl font-extrabold text-purple-400">100%</h4>
+                        <p class="text-[11px] text-slate-300 font-medium">Clean Code</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-4 text-center">
+                        <h4 class="text-2xl font-extrabold text-emerald-400">Full</h4>
+                        <p class="text-[11px] text-slate-300 font-medium">Stack Skillset</p>
+                    </div>
+                </div>
+
+                <div class="hero-elem gsap-reveal pt-2 flex flex-wrap gap-4 items-center">
+                    <a href="#projects"
+                        class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-accentButton hover:bg-white text-black font-extrabold text-sm tracking-wide shadow-xl shadow-indigo-500/25 transition-all duration-300 transform hover:-translate-y-1">
+                        <span>Explore Projects</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+
+                    <a href="#contact"
+                        class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white border border-white/20 font-bold text-sm tracking-wide transition-all duration-300 transform hover:-translate-y-1">
+                        <span>Contact Me</span>
+                        <i class="fa-regular fa-envelope text-xs"></i>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: AVATAR PORTRAIT WITH FLOATING BADGES -->
+            <div class="hero-avatar gsap-reveal lg:col-span-5 flex justify-center lg:justify-end relative">
+
+                <div id="hero-floating-box" class="relative group">
+                    <div
+                        class="absolute -inset-2 rounded-[42px] bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-pink-500/40 blur-2xl opacity-80 group-hover:opacity-100 transition-opacity">
+                    </div>
+
+                    <div
+                        class="relative w-80 h-80 sm:w-96 sm:h-96 rounded-[42px] overflow-hidden border-2 border-white/20 shadow-2xl bg-slate-900 glow-border">
+                        <img src="assets/images/hello.png" alt="Abhaya Baiju"
+                            class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" />
+
+                        <div
+                            class="absolute inset-x-0 bottom-0 pt-16 pb-6 px-6 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent flex flex-col items-start">
+                            <span
+                                class="text-xs uppercase tracking-widest text-accentBlue font-bold">// FULL STACK DEVELOPER</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wide">Abhaya Baiju</h2>
+                        </div>
+                    </div>
+
+                    <!-- Floating Badges -->
+                    <div
+                        class="floating-badge-1 absolute -top-5 -right-5 px-4 py-3 rounded-2xl bg-cardDark/95 backdrop-blur-md border border-indigo-400/40 flex items-center gap-3 text-indigo-300 shadow-2xl">
+                        <i class="fa-brands fa-python text-2xl text-accentBlue"></i>
+                        <span class="text-xs font-bold text-white">Python Dev</span>
+                    </div>
+                    <div
+                        class="floating-badge-2 absolute -bottom-5 -left-5 px-4 py-3 rounded-2xl bg-cardDark/95 backdrop-blur-md border border-emerald-400/40 flex items-center gap-3 text-emerald-400 shadow-2xl">
+                        <i class="fa-solid fa-database text-2xl text-emerald-400"></i>
+                        <span class="text-xs font-bold text-white">MySQL & Databases</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="py-24 px-6 max-w-5xl mx-auto w-full space-y-8 relative z-10">
+        <div class="glass-card rounded-3xl p-8 sm:p-12 space-y-6 glow-border">
+            <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest font-mono">// ABOUT ME</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Passionate About Building Functional Systems</h2>
+            <p class="text-slate-200 text-base sm:text-lg leading-relaxed">
+                I am a Python Full Stack Developer with a strong foundation in Python, Django, HTML, CSS, and database
+                management. I enjoy building responsive, user-friendly, and efficient web applications while
+                continuously learning new technologies. I am a friendly and collaborative team player with good
+                problem-solving and communication skills, and I enjoy turning ideas into practical digital solutions. My
+                goal is to grow as a developer and contribute to innovative projects while delivering clean, reliable,
+                and scalable applications.
+            </p>
+        </div>
+    </section>
+
+    <!-- PROJECTS SECTION WITH DYNAMIC FILTER TABS -->
+    <section id="projects" class="py-20 px-6 max-w-7xl mx-auto w-full space-y-10 relative z-10">
+        <div
+            class="section-header gsap-reveal flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-800/80 pb-6">
+            <div>
+                <span class="text-xs font-bold text-accentBlue uppercase tracking-widest font-mono">// PORTFOLIO</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-1">Featured Work</h2>
+            </div>
+
+            <!-- Dynamic Project Filter Tabs -->
+            <div class="flex flex-wrap gap-2" id="filter-tabs">
+                <button onclick="filterProjects('all')" class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold bg-accentButton text-black transition-all">All</button>
+                <button onclick="filterProjects('django')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-white/10 text-slate-300 hover:text-white transition-all">Django</button>
+                <button onclick="filterProjects('php')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-white/10 text-slate-300 hover:text-white transition-all">PHP/MySQL</button>
+                <button onclick="filterProjects('frontend')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-white/10 text-slate-300 hover:text-white transition-all">Frontend</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projects-grid">
+
+            <div class="project-card django glass-card gsap-reveal rounded-3xl p-6 space-y-5 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="w-full h-52 rounded-2xl bg-slate-800 overflow-hidden relative group">
+                        <img src="assets/images/pic1.png" alt="Career Hive Application"
+                            class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110" />
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-indigo-500/10">
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Career Hive – Job Board Application</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed">Developed a web-based job board application using
+                        Python Django that connects job seekers with employers.
+                        Implemented role-based access for administrators, employers, and applicants, including job
+                        posting, job search, application management, employer verification, and secure database management.</p>
+                </div>
+                <div class="space-y-4 pt-2">
+                    <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-indigo-200">
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">Python</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">Django</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">Bootstrap</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card php glass-card gsap-reveal rounded-3xl p-6 space-y-5 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="w-full h-52 rounded-2xl bg-slate-800 overflow-hidden relative group">
+                        <img src="assets/images/pic2.png" alt="Event Management System"
+                            class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110" />
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-indigo-500/10">
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Event Management & Wedding Booking</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed">Developed a web-based event management and wedding
+                        booking system that allows users to explore and book wedding-related products and services.
+                        Implemented features for product/service management, customer bookings, event details,
+                        and database management using PHP, MySQL, HTML and CSS.</p>
+                </div>
+                <div class="space-y-4 pt-2">
+                    <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-indigo-200">
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">PHP</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">MySQL</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">HTML & CSS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card frontend glass-card gsap-reveal rounded-3xl p-6 space-y-5 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="w-full h-52 rounded-2xl bg-slate-900 overflow-hidden relative group flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-indigo-600/30 via-purple-600/20 to-pink-500/30 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-line text-5xl text-accentBlue group-hover:scale-110 transition-transform"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Real-Time Data Analytics UI</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed">Streaming visual dashboard consuming live
+                        WebSockets feeds with customized charts, dynamic metrics, and dark mode interface elements.</p>
+                </div>
+                <div class="space-y-4 pt-2">
+                    <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-indigo-200">
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">JavaScript</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">WebSockets</span>
+                        <span class="px-3 py-1 rounded-full bg-indigo-950/90 border border-indigo-400/30">Tailwind CSS</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- INFINITE TECH MARQUEE BAND -->
+    <div class="py-6 bg-indigo-950/40 border-y border-white/10 overflow-hidden relative z-10 backdrop-blur-md">
+        <div class="animate-marquee whitespace-nowrap flex items-center gap-12 text-slate-300 text-sm font-bold tracking-wider uppercase font-mono">
+            <span><i class="fa-brands fa-python text-accentBlue mr-2 text-lg"></i> Python</span>
+            <span><i class="fa-solid fa-code text-purple-400 mr-2 text-lg"></i> Django</span>
+            <span><i class="fa-brands fa-php text-indigo-400 mr-2 text-lg"></i> PHP</span>
+            <span><i class="fa-solid fa-database text-emerald-400 mr-2 text-lg"></i> MySQL</span>
+            <span><i class="fa-brands fa-js text-yellow-400 mr-2 text-lg"></i> JavaScript</span>
+            <span><i class="fa-brands fa-html5 text-orange-400 mr-2 text-lg"></i> HTML5 & CSS3</span>
+            <span><i class="fa-brands fa-bootstrap text-purple-300 mr-2 text-lg"></i> Bootstrap</span>
+            <span><i class="fa-solid fa-wind text-cyan-400 mr-2 text-lg"></i> Tailwind CSS</span>
+            <span><i class="fa-brands fa-git-alt text-red-400 mr-2 text-lg"></i> Git & GitHub</span>
+            
+            <!-- Duplicated for smooth loop -->
+            <span><i class="fa-brands fa-python text-accentBlue mr-2 text-lg"></i> Python</span>
+            <span><i class="fa-solid fa-code text-purple-400 mr-2 text-lg"></i> Django</span>
+            <span><i class="fa-brands fa-php text-indigo-400 mr-2 text-lg"></i> PHP</span>
+            <span><i class="fa-solid fa-database text-emerald-400 mr-2 text-lg"></i> MySQL</span>
+            <span><i class="fa-brands fa-js text-yellow-400 mr-2 text-lg"></i> JavaScript</span>
+            <span><i class="fa-brands fa-html5 text-orange-400 mr-2 text-lg"></i> HTML5 & CSS3</span>
+            <span><i class="fa-brands fa-bootstrap text-purple-300 mr-2 text-lg"></i> Bootstrap</span>
+            <span><i class="fa-solid fa-wind text-cyan-400 mr-2 text-lg"></i> Tailwind CSS</span>
+            <span><i class="fa-brands fa-git-alt text-red-400 mr-2 text-lg"></i> Git & GitHub</span>
+        </div>
+    </div>
+
+    <!-- SKILLS SECTION -->
+    <section id="skills" class="py-20 px-6 max-w-7xl mx-auto w-full space-y-12 relative z-10">
+        <div
+            class="section-header gsap-reveal flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800/80 pb-6">
+            <div>
+                <span class="text-xs font-bold text-accentBlue uppercase tracking-widest font-mono">// EXPERTISE</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-1">Skills & Tooling</h2>
+            </div>
+            <p class="text-slate-300 text-sm max-w-md">Comprehensive skill set spanning backend systems, web frontends,
+                and database architectures.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="skill-card glass-card gsap-reveal rounded-2xl p-6 space-y-4 glow-border">
+                <div
+                    class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-accentBlue text-2xl">
+                    <i class="fa-brands fa-python"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Backend</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">Python, Django, PHP.</p>
+            </div>
+
+            <div class="skill-card glass-card gsap-reveal rounded-2xl p-6 space-y-4 glow-border">
+                <div
+                    class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-accentBlue text-2xl">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Frontend</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">JavaScript (ES6+), Tailwind CSS, HTML5, Bootstrap.</p>
+            </div>
+
+            <div class="skill-card glass-card gsap-reveal rounded-2xl p-6 space-y-4 glow-border">
+                <div
+                    class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-accentBlue text-2xl">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Databases</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">SQL Queries, Database Design, MySQL.</p>
+            </div>
+
+            <div class="skill-card glass-card gsap-reveal rounded-2xl p-6 space-y-4 glow-border">
+                <div
+                    class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-accentBlue text-2xl">
+                    <i class="fa-solid fa-terminal"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">DevOps & Tools</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">Git, GitHub, Command Line Tools.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="py-20 px-6 max-w-4xl mx-auto w-full space-y-10 relative z-10">
+        <div class="gsap-reveal text-center space-y-3">
+            <span class="text-xs font-bold text-accentBlue uppercase tracking-widest font-mono">// CONTACT</span>
+            <h2 class="text-3xl sm:text-5xl font-extrabold text-white">Let's Work Together</h2>
+            <p class="text-slate-300 text-sm sm:text-base max-w-md mx-auto">Have a project or opportunity in mind? Send a message and let's discuss.</p>
+        </div>
+
+        <form class="glass-card gsap-reveal rounded-3xl p-8 sm:p-10 space-y-6 glow-border">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">YOUR NAME</label>
+                    <input type="text" required
+                        class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-accentBlue transition-colors"
+                        placeholder="Enter your name...">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">YOUR EMAIL</label>
+                    <input type="email" required
+                        class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-accentBlue transition-colors"
+                        placeholder="Enter your email...">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">MESSAGE</label>
+                <textarea rows="5" required
+                    class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-accentBlue transition-colors"
+                    placeholder="Describe your project or inquiry..."></textarea>
+            </div>
+
+            <button type="submit"
+                class="w-full py-4 rounded-xl font-extrabold text-xs text-black uppercase tracking-wider bg-accentButton hover:bg-white shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-[1.01]">
+                Send Message
+            </button>
+        </form>
+    </section>
+
+    <!-- UPDATED MATCHING GLASSMORAPHIC FOOTER -->
+    <footer class="relative z-10 pt-16 pb-12 px-6 border-t border-white/10 bg-slate-950/80 backdrop-blur-2xl">
+        <!-- Radial Background Accent for Footer -->
+        <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/30 via-transparent to-transparent pointer-events-none"></div>
+
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12 relative z-10">
+
+            <div class="space-y-4">
+                <a href="#" class="text-lg font-extrabold text-white tracking-wider flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-accentBlue animate-ping"></span>
+                    ABHAYA<span class="text-accentBlue">.DEV</span>
+                </a>
+                <p class="text-xs text-slate-300 leading-relaxed font-normal">
+                    Passionate Python Full Stack Developer crafting clean, scalable architectures and interactive user experiences.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold text-sm tracking-wider uppercase font-mono mb-4 text-accentBlue">// NAVIGATION</h4>
+                <ul class="space-y-2.5 text-xs font-medium text-slate-300">
+                    <li><a href="#about" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[9px] text-accentBlue"></i> About Me</a></li>
+                    <li><a href="#projects" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[9px] text-accentBlue"></i> Portfolio</a></li>
+                    <li><a href="#skills" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[9px] text-accentBlue"></i> Expertise</a></li>
+                    <li><a href="#contact" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[9px] text-accentBlue"></i> Get in Touch</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold text-sm tracking-wider uppercase font-mono mb-4 text-accentBlue">// SOCIALS</h4>
+                <ul class="space-y-2.5 text-xs font-medium text-slate-300">
+                    <li>
+                        <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors inline-flex items-center gap-2">
+                            <i class="fa-brands fa-github text-sm text-accentBlue"></i> GitHub
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors inline-flex items-center gap-2">
+                            <i class="fa-brands fa-linkedin text-sm text-accentBlue"></i> LinkedIn
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="space-y-4">
+                <h4 class="text-white font-bold text-sm tracking-wider uppercase font-mono mb-2 text-accentBlue">// STATUS</h4>
+                <div class="glass-card rounded-2xl p-4 space-y-2 border border-white/10">
+                    <p class="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Available for Hire
+                    </p>
+                    <p class="text-[11px] text-slate-300">Direct Contact:</p>
+                    <a href="mailto:abhayabaiju805@gmail.com" class="text-xs font-semibold text-accentBlue hover:underline break-all block">
+                        abhayabaiju805@gmail.com
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="max-w-6xl mx-auto border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4 relative z-10 font-mono">
+            <p>© 2026 Abhaya Baiju. All rights reserved.</p>
+            <p class="text-[11px] text-slate-400">Engineered with GSAP & Tailwind CSS</p>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT ANIMATIONS & INTERACTIVE LOGIC -->
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Mouse Follower Glow
+        const cursor = document.getElementById('cursor-glow');
+        window.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.35,
+                ease: 'power2.out'
+            });
+        });
+
+        // 2. Preloader Animation & Counter Timeline
+        window.addEventListener('load', () => {
+            const loaderObj = { value: 0 };
+            const counterElem = document.getElementById('loader-counter');
+            const barElem = document.getElementById('loader-bar');
+
+            const tl = gsap.timeline();
+
+            tl.to(loaderObj, {
+                value: 100,
+                duration: 1.2,
+                ease: 'power2.inOut',
+                onUpdate: () => {
+                    const progress = Math.round(loaderObj.value);
+                    counterElem.innerText = `${progress}%`;
+                    barElem.style.width = `${progress}%`;
+                }
+            })
+                .to('#preloader', {
+                    yPercent: -100,
+                    duration: 0.8,
+                    ease: 'power4.inOut',
+                    onComplete: () => {
+                        document.getElementById('preloader').style.display = 'none';
+                        initHeroAnimations();
+                        initFloatingBackground();
+                    }
+                }, "+=0.1");
+        });
+
+        // 3. Floating Background Shapes
+        function initFloatingBackground() {
+            const orbs = document.querySelectorAll('.ambient-floating');
+            orbs.forEach((orb, i) => {
+                gsap.to(orb, {
+                    x: "random(-80, 80)",
+                    y: "random(-100, 100)",
+                    scale: "random(0.85, 1.25)",
+                    duration: "random(6, 10)",
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut",
+                    delay: i * 0.4
+                });
+            });
+
+            const shapes = document.querySelectorAll('.floating-shape');
+            shapes.forEach((shape, i) => {
+                gsap.to(shape, {
+                    y: "random(-30, 30)",
+                    x: "random(-20, 20)",
+                    rotation: "random(-25, 25)",
+                    duration: "random(4, 8)",
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut",
+                    delay: i * 0.3
+                });
+            });
+        }
+
+        // 4. Hero Entry Animation
+        function initHeroAnimations() {
+            gsap.to('.hero-elem', {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                stagger: 0.12,
+                ease: 'power3.out'
+            });
+
+            gsap.to('.hero-avatar', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.to('#hero-floating-box', {
+                y: -14,
+                duration: 3,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+
+            gsap.to('.floating-badge-1', {
+                y: -12,
+                x: 6,
+                duration: 2.5,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+
+            gsap.to('.floating-badge-2', {
+                y: 12,
+                x: -6,
+                duration: 2.8,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+        }
+
+        // 5. ScrollTrigger Reveals
+        gsap.utils.toArray('.gsap-reveal').forEach((elem) => {
+            if (elem.classList.contains('hero-elem') || elem.classList.contains('hero-avatar')) return;
+
+            gsap.to(elem, {
+                scrollTrigger: {
+                    trigger: elem,
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'power3.out'
+            });
+        });
+
+        // 6. Dynamic Project Filtering
+        function filterProjects(category) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-accentButton', 'text-black');
+                btn.classList.add('bg-slate-900', 'text-slate-300');
+            });
+
+            event.currentTarget.classList.remove('bg-slate-900', 'text-slate-300');
+            event.currentTarget.classList.add('bg-accentButton', 'text-black');
+
+            const projects = document.querySelectorAll('.project-card');
+            projects.forEach(project => {
+                if (category === 'all' || project.classList.contains(category)) {
+                    gsap.to(project, { display: 'flex', opacity: 1, scale: 1, duration: 0.4 });
+                } else {
+                    gsap.to(project, { display: 'none', opacity: 0, scale: 0.9, duration: 0.4 });
+                }
+            });
+        }
+
+        // 7. Card 3D Tilt Effect
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach((card) => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+
+                gsap.to(card, {
+                    rotationY: x * 0.05,
+                    rotationX: -y * 0.05,
+                    transformPerspective: 1000,
+                    ease: 'power1.out',
+                    duration: 0.3
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    rotationY: 0,
+                    rotationX: 0,
+                    ease: 'power2.out',
+                    duration: 0.5
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
